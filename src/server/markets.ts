@@ -40,9 +40,13 @@ function toSummary(m: {
   };
 }
 
-export async function listOpenMarkets(category?: string): Promise<MarketSummary[]> {
+export async function listOpenMarkets(category?: string, query?: string): Promise<MarketSummary[]> {
   const markets = await db.market.findMany({
-    where: { status: "OPEN", ...(category && category !== "全部" ? { category } : {}) },
+    where: {
+      status: "OPEN",
+      ...(category && category !== "全部" ? { category } : {}),
+      ...(query ? { title: { contains: query, mode: "insensitive" } } : {}),
+    },
     orderBy: { createdAt: "desc" },
     include: {
       trades: { select: { probAfter: true }, orderBy: { createdAt: "asc" } },
@@ -67,8 +71,25 @@ export async function getMarket(id: string) {
     include: {
       creator: { select: { username: true } },
       trades: {
-        select: { probAfter: true, createdAt: true },
+        select: {
+          id: true,
+          probAfter: true,
+          createdAt: true,
+          side: true,
+          action: true,
+          shares: true,
+          costPoints: true,
+          user: { select: { username: true } },
+        },
         orderBy: { createdAt: "asc" },
+      },
+      positions: {
+        where: { OR: [{ yesShares: { gt: 0 } }, { noShares: { gt: 0 } }] },
+        select: {
+          yesShares: true,
+          noShares: true,
+          user: { select: { username: true } },
+        },
       },
       infoCards: {
         include: { author: { select: { username: true, avatarUrl: true } } },

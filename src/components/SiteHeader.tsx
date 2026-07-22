@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { TrendingUp, Trophy, PlusCircle, Wallet } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { SearchBox } from "@/components/SearchBox";
 
 export async function SiteHeader() {
   const session = await auth().catch(() => null);
@@ -14,29 +17,45 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <Link href="/" className="flex items-center gap-2 font-heading text-lg font-bold">
-          <span className="rounded bg-primary px-1.5 py-0.5 text-primary-foreground">D</span>
-          <span>DealInfo</span>
+    <header className="sticky top-0 z-40 border-b border-border/60 glass">
+      <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-bold tracking-tight">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-yes text-sm text-primary-foreground shadow-lg shadow-primary/20">
+            D
+          </span>
+          <span className="hidden sm:inline">
+            Deal<span className="text-primary">Info</span>
+          </span>
         </Link>
-        <nav className="hidden items-center gap-4 text-sm text-muted-foreground sm:flex">
-          <Link href="/" className="hover:text-foreground">市场</Link>
-          <Link href="/leaderboard" className="hover:text-foreground">排行榜</Link>
-          <Link href="/propose" className="hover:text-foreground">提议市场</Link>
+
+        <div className="flex flex-1 justify-center px-2">
+          <Suspense>
+            <SearchBox />
+          </Suspense>
+        </div>
+
+        <nav className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
+          <Link href="/leaderboard" className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 hover:bg-secondary hover:text-foreground">
+            <Trophy className="h-4 w-4" /> 排行榜
+          </Link>
+          <Link href="/propose" className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 hover:bg-secondary hover:text-foreground">
+            <PlusCircle className="h-4 w-4" /> 提议
+          </Link>
         </nav>
-        <div className="ml-auto flex items-center gap-3">
+
+        <div className="flex shrink-0 items-center gap-2">
           {session?.user ? (
             <>
               <Link
                 href="/portfolio"
-                className="rounded-md bg-secondary px-3 py-1.5 text-sm font-medium text-secondary-foreground"
+                className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/60 px-3 py-1.5 text-sm transition-colors hover:border-primary/60"
               >
-                {points !== null ? Math.round(points).toLocaleString() : "—"} 积分
+                <Wallet className="h-4 w-4 text-yes" />
+                <span className="num font-semibold">{points !== null ? Math.round(points).toLocaleString() : "—"}</span>
               </Link>
-              <span className="text-sm text-muted-foreground">
-                {session.user.name ?? session.user.email}
-              </span>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-yes/80 text-xs font-bold text-primary-foreground">
+                {(session.user.name ?? session.user.email ?? "?").slice(0, 1).toUpperCase()}
+              </div>
             </>
           ) : (
             <>
