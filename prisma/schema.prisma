@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MarketStatus {
+  PENDING
+  OPEN
+  CLOSED
+  RESOLVED
+  REJECTED
+}
+
+enum Outcome {
+  YES
+  NO
+}
+
+enum Stance {
+  YES
+  NO
+  NEUTRAL
+}
+
+model User {
+  id            String     @id @default(cuid())
+  username      String     @unique
+  email         String     @unique
+  passwordHash  String
+  avatarUrl     String?
+  pointsBalance Float      @default(1000)
+  role          Role       @default(USER)
+  createdAt     DateTime   @default(now())
+  positions     Position[]
+  trades        Trade[]
+  infoCards     InfoCard[]
+  cardVotes     CardVote[]
+  markets       Market[]
+}
+
+model Market {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  category    String
+  status      MarketStatus @default(PENDING)
+  creator     User         @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  closesAt    DateTime
+  resolution  Outcome?
+  resolvedAt  DateTime?
+  createdAt   DateTime     @default(now())
+  qYes        Float        @default(0)
+  qNo         Float        @default(0)
+  liquidityB  Float        @default(100)
+  positions   Position[]
+  trades      Trade[]
+  infoCards   InfoCard[]
+}
+
+model Position {
+  id        String @id @default(cuid())
+  user      User   @relation(fields: [userId], references: [id])
+  userId    String
+  market    Market @relation(fields: [marketId], references: [id])
+  marketId  String
+  yesShares Float  @default(0)
+  noShares  Float  @default(0)
+
+  @@unique([userId, marketId])
+}
+
+model Trade {
+  id         String   @id @default(cuid())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String
+  market     Market   @relation(fields: [marketId], references: [id])
+  marketId   String
+  side       Outcome
+  action     String
+  shares     Float
+  costPoints Float
+  probAfter  Float
+  createdAt  DateTime @default(now())
+}
+
+model InfoCard {
+  id          String     @id @default(cuid())
+  market      Market     @relation(fields: [marketId], references: [id])
+  marketId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  authorId    String
+  stance      Stance
+  headline    String
+  body        String?
+  sourceUrl   String?
+  sourceTitle String?
+  score       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  votes       CardVote[]
+}
+
+model CardVote {
+  id     String   @id @default(cuid())
+  user   User     @relation(fields: [userId], references: [id])
+  userId String
+  card   InfoCard @relation(fields: [cardId], references: [id])
+  cardId String
+  value  Int
+
+  @@unique([userId, cardId])
+}
