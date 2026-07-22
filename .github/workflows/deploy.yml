@@ -1,0 +1,54 @@
+name: Deploy to server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Build (standalone)
+        run: npm run build
+
+      - name: Assemble deploy bundle
+        run: |
+          rm -rf deploy
+          mkdir -p deploy/.next
+          cp -r .next/standalone/. deploy/
+          cp -r .next/static deploy/.next/static
+          cp -r public deploy/public
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H 39.106.87.162 >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Rsync to server (保护服务器上的 .env)
+        run: |
+          rsync -az --delete --exclude='.env' \
+            -e "ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes" \
+            deploy/ root@39.106.87.162:/opt/dealinfo/
+
+      - name: Restart service
+        run: |
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes root@39.106.87.162 \
+            "systemctl restart dealinfo && sleep 3 && systemctl is-active dealinfo"
