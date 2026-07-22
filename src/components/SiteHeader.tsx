@@ -40,12 +40,8 @@ export async function SiteHeader() {
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/login">登录</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/register">注册</Link>
-              </Button>
+              <Button render={<Link href="/login">登录</Link>} variant="ghost" size="sm" />
+              <Button render={<Link href="/register">注册</Link>} size="sm" />
             </>
           )}
         </div>
