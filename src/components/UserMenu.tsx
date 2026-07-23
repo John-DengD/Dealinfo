@@ -2,12 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Wallet, User, LogOut } from "lucide-react";
+import { Wallet, User, LogOut, CreditCard } from "lucide-react";
+import { track } from "@hellyeah/x-ray";
 import { signOutAction } from "@/server/auth-actions";
 
-export function UserMenu({ name, points }: { name: string; points: number | null }) {
+const STRIPE_LINK = "https://buy.stripe.com/test_8x200jfJj9ysenhdXP5Ne00";
+
+export function UserMenu({
+  name,
+  points,
+  userId,
+  email,
+}: {
+  name: string;
+  points: number | null;
+  userId: string;
+  email?: string | null;
+}) {
   const [open, setOpen] = useState(false);
   const initial = (name || "?").slice(0, 1).toUpperCase();
+
+  function recharge() {
+    track("recharge_initiated", { user_id: userId });
+    const params = new URLSearchParams({ client_reference_id: userId });
+    if (email) params.set("prefilled_email", email);
+    window.location.href = `${STRIPE_LINK}?${params.toString()}`;
+  }
 
   return (
     <div className="relative">
@@ -38,6 +58,13 @@ export function UserMenu({ name, points }: { name: string; points: number | null
             >
               <User className="h-4 w-4" /> 个人中心
             </Link>
+
+            <button
+              onClick={recharge}
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-yes hover:bg-yes/10"
+            >
+              <CreditCard className="h-4 w-4" /> 充值积分
+            </button>
 
             <form action={signOutAction}>
               <button

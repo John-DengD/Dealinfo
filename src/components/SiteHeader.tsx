@@ -54,7 +54,12 @@ export async function SiteHeader() {
                 <Wallet className="h-4 w-4 text-yes" />
                 <span className="num font-semibold">{points !== null ? Math.round(points).toLocaleString() : "—"}</span>
               </Link>
-              <UserMenu name={session.user.name ?? session.user.email ?? "?"} points={points} />
+              <UserMenu
+                name={session.user.name ?? session.user.email ?? "?"}
+                points={points}
+                userId={session.user.id}
+                email={session.user.email}
+              />
             </>
           ) : (
             <>

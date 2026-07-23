@@ -38,6 +38,7 @@ export default function RootLayout({
         <Analytics
           websiteId={TRACKER_ID}
           env={process.env.NEXT_PUBLIC_HELLYEAH_TRACKER_ENV}
+          hostUrl="https://xray-staging.hellyeahai.com"
         />
       </body>
     </html>
