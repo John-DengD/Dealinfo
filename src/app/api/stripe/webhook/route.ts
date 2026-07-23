@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { Prisma } from "@prisma/client";
-import { stripe, centsToPoints } from "@/lib/stripe";
+import { getStripe, centsToPoints } from "@/lib/stripe";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const raw = await req.text();
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(raw, sig, secret);
+    event = getStripe().webhooks.constructEvent(raw, sig, secret);
   } catch {
     return new Response("invalid signature", { status: 400 });
   }
