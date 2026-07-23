@@ -1,7 +1,9 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
 import { proposeMarket } from "@/server/markets";
+import { tracker, visitorIdFromCookie } from "@/lib/tracker";
 
 export type ProposeState = { error?: string; ok?: boolean };
 
@@ -21,7 +23,12 @@ export async function proposeAction(
   if (closesAt <= new Date()) return { error: "截止时间必须在未来" };
 
   try {
-    await proposeMarket({ title, description, category, closesAt, creatorId: session.user.id });
+    const market = await proposeMarket({ title, description, category, closesAt, creatorId: session.user.id });
+    await tracker.trackImmediate("market_proposed", {
+      distinctId: session.user.id,
+      visitorId: await visitorIdFromCookie(await cookies()),
+      metadata: { market_id: market.id, category: market.category },
+    });
     return { ok: true };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "提交失败" };

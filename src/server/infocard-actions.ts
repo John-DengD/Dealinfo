@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
+import { tracker, visitorIdFromCookie } from "@/lib/tracker";
 import { addInfoCard, voteCard, type Stance } from "./infocards";
 
 export async function addCardAction(input: {
@@ -14,7 +16,12 @@ export async function addCardAction(input: {
   const session = await auth();
   if (!session?.user?.id) return { error: "请先登录" };
   try {
-    await addInfoCard({ ...input, authorId: session.user.id });
+    const card = await addInfoCard({ ...input, authorId: session.user.id });
+    await tracker.trackImmediate("infocard_added", {
+      distinctId: session.user.id,
+      visitorId: await visitorIdFromCookie(await cookies()),
+      metadata: { market_id: input.marketId, card_id: card.id, stance: input.stance },
+    });
     revalidatePath(`/market/${input.marketId}`);
     return { ok: true };
   } catch (e) {
