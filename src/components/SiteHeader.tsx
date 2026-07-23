@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { SearchBox } from "@/components/SearchBox";
+import { UserMenu } from "@/components/UserMenu";
 
 export async function SiteHeader() {
   const session = await auth().catch(() => null);
@@ -53,9 +54,7 @@ export async function SiteHeader() {
                 <Wallet className="h-4 w-4 text-yes" />
                 <span className="num font-semibold">{points !== null ? Math.round(points).toLocaleString() : "—"}</span>
               </Link>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-yes/80 text-xs font-bold text-primary-foreground">
-                {(session.user.name ?? session.user.email ?? "?").slice(0, 1).toUpperCase()}
-              </div>
+              <UserMenu name={session.user.name ?? session.user.email ?? "?"} points={points} />
             </>
           ) : (
             <>
