@@ -48,7 +48,21 @@ jobs:
             -e "ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes" \
             deploy/ root@39.106.87.162:/opt/dealinfo/
 
-      - name: Restart service
+      - name: Sync runtime secrets to server .env & restart
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
         run: |
+          # 仅写入非空的密钥(未在 GitHub 配置时不覆盖服务器已有值)
+          : > stripe.env
+          [ -n "$STRIPE_SECRET_KEY" ] && echo "STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY" >> stripe.env
+          [ -n "$STRIPE_PUBLISHABLE_KEY" ] && echo "STRIPE_PUBLISHABLE_KEY=$STRIPE_PUBLISHABLE_KEY" >> stripe.env
+          [ -n "$STRIPE_WEBHOOK_SECRET" ] && echo "STRIPE_WEBHOOK_SECRET=$STRIPE_WEBHOOK_SECRET" >> stripe.env
+          if [ -s stripe.env ]; then
+            scp -i ~/.ssh/id_deploy -o IdentitiesOnly=yes stripe.env root@39.106.87.162:/tmp/dealinfo-stripe.env
+            ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes root@39.106.87.162 \
+              'cd /opt/dealinfo && sed -i "/^STRIPE_/d" .env 2>/dev/null; cat /tmp/dealinfo-stripe.env >> .env && chmod 600 .env && rm -f /tmp/dealinfo-stripe.env'
+          fi
           ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes root@39.106.87.162 \
             "systemctl restart dealinfo && sleep 3 && systemctl is-active dealinfo"
