@@ -2,7 +2,6 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
-import { tracker } from "@/lib/tracker";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -38,24 +37,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role as string;
       }
       return session;
-    },
-  },
-  events: {
-    async signIn({ user }) {
-      if (user?.id) {
-        await tracker
-          .trackImmediate("login", {
-            distinctId: user.id,
-            metadata: { method: "credentials" },
-          })
-          .catch(() => {});
-      }
-    },
-    async signOut(message) {
-      const uid = "token" in message ? (message.token?.id as string | undefined) : undefined;
-      await tracker
-        .trackImmediate("logout", { distinctId: uid ?? "unknown" })
-        .catch(() => {});
     },
   },
   pages: { signIn: "/login" },

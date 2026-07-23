@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Wallet, User, LogOut, CreditCard } from "lucide-react";
-import { track } from "@hellyeah/x-ray";
 import { signOutAction } from "@/server/auth-actions";
 
 const STRIPE_LINK = "https://buy.stripe.com/test_8x200jfJj9ysenhdXP5Ne00";
@@ -23,7 +22,6 @@ export function UserMenu({
   const initial = (name || "?").slice(0, 1).toUpperCase();
 
   function recharge() {
-    track("recharge_initiated", { user_id: userId });
     const params = new URLSearchParams({ client_reference_id: userId });
     if (email) params.set("prefilled_email", email);
     window.location.href = `${STRIPE_LINK}?${params.toString()}`;
