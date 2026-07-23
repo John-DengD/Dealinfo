@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { track, cv } from "@hellyeah/x-ray";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,10 @@ export function TradePanel({ marketId, probYes, tradeable, loggedIn }: Props) {
 
   const n = Number(shares);
   const validShares = Number.isFinite(n) && n > 0;
+
+  useEffect(() => {
+    track(cv.viewContent, { market_id: marketId });
+  }, [marketId]);
 
   useEffect(() => {
     if (!validShares) {

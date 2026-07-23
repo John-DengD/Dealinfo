@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@hellyeah/x-ray/next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/SiteHeader";
+import { TRACKER_ID } from "@/lib/tracker-id";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -33,6 +35,10 @@ export default function RootLayout({
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <Toaster richColors position="top-center" />
+        <Analytics
+          websiteId={TRACKER_ID}
+          env={process.env.NEXT_PUBLIC_HELLYEAH_TRACKER_ENV}
+        />
       </body>
     </html>
   );

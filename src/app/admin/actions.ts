@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
+import { tracker } from "@/lib/tracker";
 import { approveMarket, rejectMarket } from "@/server/markets";
 import { resolveMarket } from "@/server/trading";
 
@@ -14,7 +15,12 @@ export async function approveAction(formData: FormData) {
   await assertAdmin();
   const id = String(formData.get("id"));
   const b = Number(formData.get("liquidityB") || 100);
-  await approveMarket(id, b);
+  const market = await approveMarket(id, b);
+  await tracker.trackImmediate("market_approved", {
+    distinctId: market.creatorId,
+    eventId: `market-approved:${market.id}`,
+    metadata: { market_id: market.id, category: market.category },
+  });
   revalidatePath("/admin");
   revalidatePath("/");
 }

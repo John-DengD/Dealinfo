@@ -1,8 +1,10 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import { cookies } from "next/headers";
 import { registerUser } from "@/server/accounts";
 import { signIn } from "@/lib/auth";
+import { cv, tracker, visitorIdFromCookie } from "@/lib/tracker";
 
 export type AuthActionState = { error?: string };
 
@@ -14,7 +16,13 @@ export async function registerAction(
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   try {
-    await registerUser({ username, email, password });
+    const user = await registerUser({ username, email, password });
+    await tracker.trackImmediate(cv.registrationComplete, {
+      distinctId: user.id,
+      visitorId: await visitorIdFromCookie(await cookies()),
+      identity: { email: user.email },
+      metadata: { signup_method: "credentials" },
+    });
   } catch (e) {
     return { error: e instanceof Error ? e.message : "注册失败" };
   }
