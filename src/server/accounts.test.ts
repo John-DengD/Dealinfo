@@ -1,8 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, describe, it, expect } from "vitest";
 import { db } from "@/lib/db";
 import { registerUser } from "./accounts";
+import { cleanupTestData } from "./test-cleanup";
 
 describe("registerUser", () => {
+  afterAll(cleanupTestData);
+
   it("成功注册并发放初始 1000 积分", async () => {
     const tag = `reg_${Date.now()}`;
     const u = await registerUser({ username: tag, email: `${tag}@x.com`, password: "secret123" });

@@ -75,9 +75,9 @@ function InfoCardItem({
   }
 
   return (
-    <div className={`rounded-lg border ${meta.ring} bg-card p-3`}>
+    <div className={`rounded-2xl border ${meta.ring} bg-background/45 p-3 shadow-[0_0_24px_color-mix(in_oklch,var(--primary),transparent_88%)]`}>
       <div className="mb-2 flex items-center gap-2">
-        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full border border-border/70 bg-secondary/70 text-xs">
           {card.authorAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={card.authorAvatar} alt="" className="h-6 w-6 rounded-full" />
@@ -153,7 +153,7 @@ function AddCardDialog({ marketId }: { marketId: string }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button size="sm" variant="secondary">
+          <Button size="sm" variant="secondary" className="rounded-full border border-primary/35 bg-primary/15">
             + 贡献信息
           </Button>
         }
@@ -170,8 +170,8 @@ function AddCardDialog({ marketId }: { marketId: string }) {
                 <button
                   key={s}
                   onClick={() => setStance(s)}
-                  className={`flex-1 rounded-md border py-1.5 text-sm transition-colors ${
-                    stance === s ? "border-primary text-foreground" : "border-border text-muted-foreground"
+                  className={`flex-1 rounded-xl border py-2 text-sm font-semibold transition-colors ${
+                    stance === s ? "border-primary bg-primary/15 text-foreground" : "border-border text-muted-foreground"
                   }`}
                 >
                   {STANCE_META[s].label}
@@ -238,16 +238,16 @@ export function InfoCardsSection({
           社区信息 <span className="text-sm font-normal text-muted-foreground">({cards.length})</span>
         </h2>
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md border border-border text-xs">
+          <div className="flex rounded-full border border-border/70 bg-background/35 p-0.5 text-xs">
             <button
               onClick={() => setSort("top")}
-              className={`px-2 py-1 ${sort === "top" ? "bg-secondary text-foreground" : "text-muted-foreground"}`}
+              className={`rounded-full px-2.5 py-1 ${sort === "top" ? "bg-primary/20 text-foreground" : "text-muted-foreground"}`}
             >
               最有用
             </button>
             <button
               onClick={() => setSort("new")}
-              className={`px-2 py-1 ${sort === "new" ? "bg-secondary text-foreground" : "text-muted-foreground"}`}
+              className={`rounded-full px-2.5 py-1 ${sort === "new" ? "bg-primary/20 text-foreground" : "text-muted-foreground"}`}
             >
               最新
             </button>

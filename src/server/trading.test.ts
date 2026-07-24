@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, describe, it, expect } from "vitest";
 import { db } from "@/lib/db";
 import { placeOrder, resolveMarket } from "./trading";
+import { cleanupTestData } from "./test-cleanup";
 
 let seq = 0;
 async function seed() {
@@ -24,6 +25,8 @@ async function seed() {
 }
 
 describe("trading service", () => {
+  afterAll(cleanupTestData);
+
   it("买入:扣积分、建持仓、更新市场份额、写流水", async () => {
     const { u, m } = await seed();
     const r = await placeOrder({ userId: u.id, marketId: m.id, side: "YES", action: "BUY", shares: 10 });
