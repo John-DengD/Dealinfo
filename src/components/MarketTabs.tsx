@@ -55,21 +55,21 @@ export function MarketTabs({
 
   return (
     <div>
-      <div className="mb-4 flex gap-1 border-b border-border">
+      <div className="mb-4 flex gap-1 overflow-x-auto rounded-2xl border border-border/70 bg-background/35 p-1">
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`relative px-3 py-2 text-sm font-medium transition-colors ${
-              tab === t.key ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            className={`relative shrink-0 rounded-xl px-3 py-2 text-sm font-black transition-colors ${
+              tab === t.key ? "bg-primary/20 text-foreground shadow-[0_0_20px_color-mix(in_oklch,var(--primary),transparent_76%)]" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t.label}
             {t.badge !== undefined && t.badge > 0 && (
-              <span className="ml-1.5 rounded-full bg-secondary px-1.5 text-xs">{t.badge}</span>
+              <span className="ml-1.5 rounded-full bg-secondary/80 px-1.5 text-xs">{t.badge}</span>
             )}
             {tab === t.key && (
-              <motion.div layoutId="tab-underline" className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
+              <motion.div layoutId="tab-underline" className="absolute inset-x-3 bottom-0 h-0.5 bg-primary" />
             )}
           </button>
         ))}
@@ -88,14 +88,14 @@ export function MarketTabs({
           )}
 
           {tab === "activity" && (
-            <div className="divide-y divide-border rounded-lg border border-border">
+            <div className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-background/35">
               {activity.length === 0 ? (
                 <p className="p-4 text-center text-sm text-muted-foreground">暂无交易活动。</p>
               ) : (
                 activity.map((a) => (
-                  <div key={a.id} className="flex items-center justify-between px-3 py-2 text-sm">
+                  <div key={a.id} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
                     <span className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border/70 bg-secondary/70 text-xs">
                         {a.userName.slice(0, 1).toUpperCase()}
                       </span>
                       <span className="text-muted-foreground">
@@ -127,7 +127,7 @@ export function MarketTabs({
                     <div className={`mb-2 text-sm font-semibold ${side === "YES" ? "text-yes" : "text-no"}`}>
                       {side} 持有人
                     </div>
-                    <div className="divide-y divide-border rounded-lg border border-border">
+                    <div className="divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-background/35">
                       {sorted.length === 0 ? (
                         <p className="p-3 text-center text-xs text-muted-foreground">暂无</p>
                       ) : (
@@ -151,7 +151,7 @@ export function MarketTabs({
           )}
 
           {tab === "rules" && (
-            <div className="rounded-lg border border-border p-4 text-sm leading-relaxed text-muted-foreground">
+            <div className="rounded-2xl border border-border/70 bg-background/35 p-4 text-sm leading-relaxed text-muted-foreground">
               {description ? (
                 <p className="whitespace-pre-wrap">{description}</p>
               ) : (

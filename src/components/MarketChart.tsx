@@ -27,7 +27,15 @@ export function MarketChart({ points, now }: { points: ChartPoint[]; now: number
     const cutoff = now - win;
     const filtered = points.filter((p) => p.t >= cutoff);
     const use = filtered.length >= 2 ? filtered : points;
-    return use.map((p) => ({ t: p.t, p: Math.round(p.p * 100) }));
+    if (use.length >= 2) {
+      return use.map((p) => ({ t: p.t, p: Math.round(p.p * 100) }));
+    }
+    const only = use[0] ?? { t: now, p: 0.5 };
+    const start = only.t - 11 * 60 * 1000;
+    return Array.from({ length: 12 }, (_, i) => ({
+      t: start + i * 60 * 1000,
+      p: Math.round(only.p * 100),
+    }));
   }, [points, range, now]);
 
   const last = data.length ? data[data.length - 1].p : 50;
@@ -42,19 +50,19 @@ export function MarketChart({ points, now }: { points: ChartPoint[]; now: number
             key={last}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`num text-3xl font-bold ${up ? "text-yes" : "text-no"}`}
+            className={`num neon-text-glow text-5xl font-black ${up ? "text-yes" : "text-no"}`}
           >
             {last}%
           </motion.span>
-          <span className="text-xs text-muted-foreground">Yes 概率</span>
+          <span className="text-xs font-black uppercase text-muted-foreground">Yes 概率</span>
         </div>
-        <div className="flex gap-1 rounded-lg border border-border p-0.5">
+        <div className="flex gap-1 rounded-full border border-border/70 bg-background/35 p-1">
           {RANGES.map((r) => (
             <button
               key={r.key}
               onClick={() => setRange(r.key)}
-              className={`rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                range === r.key ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground"
+              className={`rounded-full px-2.5 py-1 text-xs font-black transition-colors ${
+                range === r.key ? "bg-primary/25 text-foreground shadow-[0_0_18px_color-mix(in_oklch,var(--primary),transparent_72%)]" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {r.key}
@@ -63,12 +71,12 @@ export function MarketChart({ points, now }: { points: ChartPoint[]; now: number
         </div>
       </div>
 
-      <div className="h-64 w-full">
+      <div className="h-72 w-full rounded-2xl border border-border/60 bg-background/30 p-2 shadow-inner shadow-primary/10">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -22 }}>
             <defs>
               <linearGradient id="mktFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                <stop offset="0%" stopColor={color} stopOpacity={0.48} />
                 <stop offset="100%" stopColor={color} stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -77,16 +85,16 @@ export function MarketChart({ points, now }: { points: ChartPoint[]; now: number
               domain={[0, 100]} ticks={[0, 25, 50, 75, 100]} tickFormatter={(v) => `${v}%`}
               tick={{ fill: "var(--muted-foreground)", fontSize: 11 }} axisLine={false} tickLine={false}
             />
-            <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="3 3" />
+            <ReferenceLine y={50} stroke="var(--border)" strokeDasharray="6 8" />
             <Tooltip
               formatter={(v) => [`${v}%`, "Yes"]}
               labelFormatter={(t) => new Date(Number(t)).toLocaleString("zh-CN")}
               contentStyle={{
-                background: "var(--popover)", border: "1px solid var(--border)",
-                borderRadius: 8, color: "var(--popover-foreground)", fontSize: 12,
+                background: "color-mix(in oklch, var(--popover), transparent 4%)", border: "1px solid var(--border)",
+                borderRadius: 14, color: "var(--popover-foreground)", fontSize: 12,
               }}
             />
-            <Area type="monotone" dataKey="p" stroke={color} strokeWidth={2.5} fill="url(#mktFill)" isAnimationActive />
+            <Area type="monotone" dataKey="p" stroke={color} strokeWidth={4} fill="url(#mktFill)" isAnimationActive />
           </AreaChart>
         </ResponsiveContainer>
       </div>

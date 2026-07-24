@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, describe, it, expect } from "vitest";
 import { db } from "@/lib/db";
 import { addInfoCard, voteCard, listCards } from "./infocards";
+import { cleanupTestData } from "./test-cleanup";
 
 let seq = 0;
 async function seedMarketAndUsers() {
@@ -29,6 +30,8 @@ async function seedMarketAndUsers() {
 }
 
 describe("info cards", () => {
+  afterAll(cleanupTestData);
+
   it("添加信息卡(无来源)", async () => {
     const { author, market } = await seedMarketAndUsers();
     const card = await addInfoCard({

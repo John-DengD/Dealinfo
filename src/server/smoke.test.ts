@@ -1,11 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { afterAll, describe, it, expect } from "vitest";
 import { db } from "@/lib/db";
 import { registerUser } from "./accounts";
 import { proposeMarket, approveMarket } from "./markets";
 import { placeOrder, resolveMarket } from "./trading";
 import { addInfoCard } from "./infocards";
+import { cleanupTestData } from "./test-cleanup";
 
 describe("端到端冒烟:注册→提议→上线→交易→信息卡→结算", () => {
+  afterAll(cleanupTestData);
+
   it("完整流程,最终积分与状态正确", async () => {
     const tag = `smoke_${Date.now()}`;
     const user = await registerUser({ username: tag, email: `${tag}@x.com`, password: "secret123" });

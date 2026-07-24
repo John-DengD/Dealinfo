@@ -16,13 +16,13 @@ export function SearchBox() {
   }
 
   return (
-    <form onSubmit={submit} className="relative w-full max-w-md">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    <form onSubmit={submit} className="neon-scan relative w-full max-w-xl rounded-full">
+      <Search className="pointer-events-none absolute left-4 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-primary" />
       <input
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="搜索市场…"
-        className="h-9 w-full rounded-full border border-border bg-secondary/60 pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:bg-secondary"
+        placeholder="搜索市场、主题、社区推荐…"
+        className="relative z-0 h-10 w-full rounded-full border border-primary/25 bg-background/70 pl-11 pr-4 text-sm shadow-[0_0_28px_color-mix(in_oklch,var(--primary),transparent_78%)] outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:bg-background/90 focus:ring-2 focus:ring-primary/25"
       />
     </form>
   );

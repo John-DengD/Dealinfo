@@ -92,33 +92,33 @@
 }
 
 .dark {
-  --background: oklch(0.17 0.01 250);
-  --foreground: oklch(0.97 0.005 250);
-  --card: oklch(0.21 0.012 250);
+  --background: oklch(0.105 0.014 265);
+  --foreground: oklch(0.985 0.012 230);
+  --card: oklch(0.17 0.026 258);
   --card-foreground: oklch(0.97 0.005 250);
-  --popover: oklch(0.21 0.012 250);
+  --popover: oklch(0.15 0.026 258);
   --popover-foreground: oklch(0.97 0.005 250);
-  --primary: oklch(0.62 0.17 250);
-  --primary-foreground: oklch(0.98 0.01 250);
-  --secondary: oklch(0.27 0.015 250);
+  --primary: oklch(0.82 0.145 210);
+  --primary-foreground: oklch(0.11 0.02 250);
+  --secondary: oklch(0.23 0.033 258);
   --secondary-foreground: oklch(0.97 0.005 250);
-  --muted: oklch(0.27 0.015 250);
-  --muted-foreground: oklch(0.68 0.02 250);
-  --accent: oklch(0.3 0.02 250);
+  --muted: oklch(0.235 0.034 258);
+  --muted-foreground: oklch(0.72 0.04 240);
+  --accent: oklch(0.28 0.055 225);
   --accent-foreground: oklch(0.98 0.005 250);
   --destructive: oklch(0.63 0.22 22);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.62 0.17 250);
-  --yes: oklch(0.74 0.18 152);
-  --yes-foreground: oklch(0.16 0.02 152);
-  --no: oklch(0.66 0.22 22);
+  --border: oklch(1 0 0 / 14%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.82 0.145 210);
+  --yes: oklch(0.83 0.19 157);
+  --yes-foreground: oklch(0.11 0.03 157);
+  --no: oklch(0.7 0.24 18);
   --no-foreground: oklch(0.98 0 0);
-  --chart-1: oklch(0.62 0.17 250);
-  --chart-2: oklch(0.74 0.18 152);
-  --chart-3: oklch(0.66 0.22 22);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --chart-1: oklch(0.82 0.145 210);
+  --chart-2: oklch(0.83 0.19 157);
+  --chart-3: oklch(0.7 0.24 18);
+  --chart-4: oklch(0.78 0.18 330);
+  --chart-5: oklch(0.86 0.15 82);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
   --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -136,8 +136,10 @@
   body {
     @apply bg-background text-foreground;
     background-image:
-      radial-gradient(60rem 40rem at 85% -10%, color-mix(in oklch, var(--primary), transparent 88%), transparent),
-      radial-gradient(50rem 30rem at 0% 0%, color-mix(in oklch, var(--yes), transparent 92%), transparent);
+      radial-gradient(60rem 42rem at 82% -12%, color-mix(in oklch, var(--primary), transparent 76%), transparent),
+      radial-gradient(46rem 36rem at -6% 0%, color-mix(in oklch, var(--yes), transparent 84%), transparent),
+      radial-gradient(48rem 34rem at 96% 50%, color-mix(in oklch, var(--chart-4), transparent 88%), transparent),
+      linear-gradient(180deg, color-mix(in oklch, var(--background), white 2%), var(--background));
     background-attachment: fixed;
   }
   html {
@@ -150,10 +152,120 @@
     background: color-mix(in oklch, var(--card), transparent 20%);
     backdrop-filter: blur(12px);
   }
+  .neon-page {
+    position: relative;
+    isolation: isolate;
+  }
+  .neon-page::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    opacity: 0.5;
+    background:
+      linear-gradient(transparent 0 31px, color-mix(in oklch, var(--primary), transparent 92%) 32px),
+      linear-gradient(90deg, transparent 0 31px, color-mix(in oklch, var(--foreground), transparent 95%) 32px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(to bottom, transparent, black 16%, black 78%, transparent);
+  }
+  .neon-page::after {
+    content: "";
+    position: fixed;
+    inset: -35%;
+    z-index: -3;
+    pointer-events: none;
+    opacity: 0.35;
+    background:
+      conic-gradient(from 20deg, transparent, color-mix(in oklch, var(--primary), transparent 70%), transparent, color-mix(in oklch, var(--chart-4), transparent 74%), transparent, color-mix(in oklch, var(--yes), transparent 72%), transparent);
+    filter: blur(34px);
+    animation: neon-orbit 22s linear infinite;
+  }
+  .neon-surface,
+  .neon-liquid {
+    border: 1px solid color-mix(in oklch, var(--foreground), transparent 86%);
+    background:
+      linear-gradient(145deg, color-mix(in oklch, var(--card), white 8%), color-mix(in oklch, var(--card), transparent 28%));
+    box-shadow:
+      inset 0 1px color-mix(in oklch, var(--foreground), transparent 88%),
+      0 22px 58px color-mix(in oklch, black, transparent 62%);
+    backdrop-filter: blur(22px) saturate(150%);
+  }
+  .neon-liquid::before,
+  .neon-surface::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.9;
+    background:
+      radial-gradient(18rem 12rem at 86% -8%, color-mix(in oklch, var(--primary), transparent 76%), transparent),
+      radial-gradient(16rem 10rem at -8% 8%, color-mix(in oklch, var(--yes), transparent 80%), transparent),
+      linear-gradient(120deg, color-mix(in oklch, var(--foreground), transparent 92%), transparent 36%);
+  }
+  .neon-liquid > canvas[aria-hidden] {
+    z-index: 1;
+    opacity: 0.48;
+    mix-blend-mode: plus-lighter;
+    filter: saturate(140%) contrast(118%);
+  }
+  .neon-liquid > div {
+    position: relative;
+    z-index: 2;
+    border-radius: inherit;
+    background:
+      linear-gradient(145deg, color-mix(in oklch, var(--card), transparent 10%), color-mix(in oklch, var(--background), transparent 18%));
+  }
+  .neon-liquid::after,
+  .neon-surface::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(120deg, var(--primary), transparent 28%, var(--chart-4) 54%, transparent 72%, var(--yes));
+    opacity: 0.55;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  .neon-scan {
+    position: relative;
+    overflow: hidden;
+  }
+  .neon-scan::after {
+    content: "";
+    position: absolute;
+    inset: -120% -30%;
+    pointer-events: none;
+    background: linear-gradient(100deg, transparent 42%, color-mix(in oklch, var(--foreground), transparent 52%), transparent 58%);
+    transform: translateX(-45%) rotate(10deg);
+    animation: neon-sweep 3.4s ease-in-out infinite;
+  }
+  .neon-button {
+    color: var(--yes-foreground);
+    background: linear-gradient(135deg, var(--yes), var(--primary) 58%, var(--chart-4));
+    box-shadow:
+      0 0 24px color-mix(in oklch, var(--yes), transparent 66%),
+      0 0 44px color-mix(in oklch, var(--primary), transparent 76%);
+  }
+  .neon-ring {
+    box-shadow:
+      0 0 18px color-mix(in oklch, currentColor, transparent 72%),
+      0 0 38px color-mix(in oklch, currentColor, transparent 86%);
+  }
+  .neon-text-glow {
+    text-shadow:
+      0 0 18px color-mix(in oklch, currentColor, transparent 58%),
+      0 0 34px color-mix(in oklch, currentColor, transparent 78%);
+  }
   .num {
     font-family: var(--font-geist-mono), ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
   }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { scrollbar-width: none; }
@@ -180,4 +292,23 @@
   transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, color-mix(in oklch, var(--foreground), transparent 92%), transparent);
   animation: shimmer 1.5s infinite;
+}
+
+@keyframes neon-orbit {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes neon-sweep {
+  0%, 48% { transform: translateX(-60%) rotate(10deg); opacity: 0; }
+  62% { opacity: 0.85; }
+  100% { transform: translateX(120%) rotate(10deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .neon-page::after,
+  .neon-scan::after,
+  .animate-fade-up,
+  .skeleton::after {
+    animation: none !important;
+  }
 }
