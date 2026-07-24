@@ -1,6 +1,6 @@
 import { afterAll, describe, it, expect } from "vitest";
 import { db } from "@/lib/db";
-import { placeOrder, resolveMarket } from "./trading";
+import { cancelMarketAndRefund, placeOrder, resolveMarket } from "./trading";
 import { cleanupTestData } from "./test-cleanup";
 
 let seq = 0;
@@ -89,5 +89,28 @@ describe("trading service", () => {
     await expect(
       placeOrder({ userId: u.id, marketId: m.id, side: "YES", action: "BUY", shares: 1 })
     ).rejects.toThrow();
+  });
+
+  it("下线退款:撤销该市场所有买卖现金流并清空持仓", async () => {
+    const { u, m } = await seed();
+    const buy = await placeOrder({ userId: u.id, marketId: m.id, side: "YES", action: "BUY", shares: 10 });
+    const sell = await placeOrder({ userId: u.id, marketId: m.id, side: "YES", action: "SELL", shares: 4 });
+
+    await cancelMarketAndRefund(m.id);
+
+    const user = await db.user.findUnique({ where: { id: u.id } });
+    const market = await db.market.findUnique({ where: { id: m.id } });
+    const pos = await db.position.findUnique({
+      where: { userId_marketId: { userId: u.id, marketId: m.id } },
+    });
+
+    expect(user!.pointsBalance).toBeCloseTo(1000, 4);
+    expect(market!.status).toBe("CANCELED");
+    expect(market!.qYes).toBe(0);
+    expect(market!.qNo).toBe(0);
+    expect(market!.cancelReason).toBe("admin_removed");
+    expect(pos!.yesShares).toBe(0);
+    expect(pos!.noShares).toBe(0);
+    expect(buy.costPoints).toBeGreaterThan(sell.costPoints);
   });
 });

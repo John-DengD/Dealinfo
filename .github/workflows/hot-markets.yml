@@ -1,0 +1,21 @@
+name: Daily hot markets
+
+on:
+  schedule:
+    - cron: "10 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger hot market job
+        env:
+          DEALINFO_BASE_URL: ${{ secrets.DEALINFO_BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$DEALINFO_BASE_URL"
+          test -n "$CRON_SECRET"
+          curl -fsS \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$DEALINFO_BASE_URL/api/cron/hot-markets"

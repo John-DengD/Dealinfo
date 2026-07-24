@@ -19,6 +19,7 @@ enum MarketStatus {
   CLOSED
   RESOLVED
   REJECTED
+  CANCELED
 }
 
 enum Outcome {
@@ -50,23 +51,34 @@ model User {
 }
 
 model Market {
-  id          String       @id @default(cuid())
-  title       String
-  description String
-  category    String
-  status      MarketStatus @default(PENDING)
-  creator     User         @relation(fields: [creatorId], references: [id])
-  creatorId   String
-  closesAt    DateTime
-  resolution  Outcome?
-  resolvedAt  DateTime?
-  createdAt   DateTime     @default(now())
-  qYes        Float        @default(0)
-  qNo         Float        @default(0)
-  liquidityB  Float        @default(100)
-  positions   Position[]
-  trades      Trade[]
-  infoCards   InfoCard[]
+  id                String       @id @default(cuid())
+  title             String
+  description       String
+  category          String
+  status            MarketStatus @default(PENDING)
+  creator           User         @relation(fields: [creatorId], references: [id])
+  creatorId         String
+  closesAt          DateTime
+  resolution        Outcome?
+  resolutionNote    String?
+  resolvedAt        DateTime?
+  canceledAt        DateTime?
+  cancelReason      String?
+  createdAt         DateTime     @default(now())
+  sourceUrl         String?      @unique
+  sourceName        String?
+  sourcePublishedAt DateTime?
+  generatedBy       String?
+  generationDate    DateTime?
+  qYes              Float        @default(0)
+  qNo               Float        @default(0)
+  liquidityB        Float        @default(100)
+  positions         Position[]
+  trades            Trade[]
+  infoCards         InfoCard[]
+
+  @@index([generatedBy, generationDate])
+  @@index([status, closesAt])
 }
 
 model Position {

@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { tracker } from "@/lib/tracker";
 import { approveMarket, rejectMarket } from "@/server/markets";
-import { resolveMarket } from "@/server/trading";
+import { runDailyHotMarketJob } from "@/server/hot-markets";
+import { cancelMarketAndRefund, resolveMarket } from "@/server/trading";
 
 async function assertAdmin() {
   const session = await auth();
@@ -39,5 +40,21 @@ export async function resolveAction(formData: FormData) {
   if (outcome !== "YES" && outcome !== "NO") throw new Error("结果无效");
   await resolveMarket(id, outcome);
   revalidatePath("/admin");
+  revalidatePath(`/market/${id}`);
+}
+
+export async function syncHotMarketsAction() {
+  await assertAdmin();
+  await runDailyHotMarketJob();
+  revalidatePath("/admin");
+  revalidatePath("/");
+}
+
+export async function cancelMarketAction(formData: FormData) {
+  await assertAdmin();
+  const id = String(formData.get("id"));
+  await cancelMarketAndRefund(id);
+  revalidatePath("/admin");
+  revalidatePath("/");
   revalidatePath(`/market/${id}`);
 }

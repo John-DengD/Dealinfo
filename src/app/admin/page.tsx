@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { listPendingMarkets, listResolvableMarkets } from "@/server/markets";
-import { approveAction, rejectAction, resolveAction } from "./actions";
+import { approveAction, cancelMarketAction, rejectAction, resolveAction, syncHotMarketsAction } from "./actions";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,20 @@ export default async function AdminPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">管理后台</h1>
+
+      <section className="mb-10">
+        <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+          <div>
+            <h2 className="font-semibold">每日热点市场</h2>
+            <p className="text-sm text-muted-foreground">
+              抓取 10 个领域热点,直接生成上线的 Yes/No 市场,并自动尝试结算到期热点。
+            </p>
+          </div>
+          <form action={syncHotMarketsAction}>
+            <Button type="submit">立即同步热点</Button>
+          </form>
+        </Card>
+      </section>
 
       <section className="mb-10">
         <h2 className="mb-3 text-lg font-semibold">
@@ -82,6 +96,14 @@ export default async function AdminPage() {
                     判定 No
                   </Button>
                 </form>
+                {m.status === "OPEN" && (
+                  <form action={cancelMarketAction}>
+                    <input type="hidden" name="id" value={m.id} />
+                    <Button type="submit" size="sm" variant="destructive">
+                      下线并退款
+                    </Button>
+                  </form>
+                )}
               </div>
             </Card>
           ))}

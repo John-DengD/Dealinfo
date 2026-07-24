@@ -16,6 +16,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   RESOLVED: { label: "已结算", cls: "bg-primary/15 text-primary" },
   PENDING: { label: "待审核", cls: "bg-secondary text-muted-foreground" },
   REJECTED: { label: "已拒绝", cls: "bg-no/15 text-no" },
+  CANCELED: { label: "已下线", cls: "bg-no/15 text-no" },
 };
 
 export default async function MarketPage({ params }: { params: Promise<{ id: string }> }) {
@@ -118,6 +119,15 @@ export default async function MarketPage({ params }: { params: Promise<{ id: str
                   {market.resolution}
                 </span>
                 。持仓已按结果兑付。
+              </p>
+            </NeonSurface>
+          )}
+
+          {market.status === "CANCELED" && (
+            <NeonSurface className="rounded-2xl border-no/40 bg-no/5 p-4">
+              <p className="text-sm">
+                该市场已下线,相关交易已退款。原因:{" "}
+                <span className="font-bold text-no">{market.cancelReason ?? "admin_removed"}</span>
               </p>
             </NeonSurface>
           )}

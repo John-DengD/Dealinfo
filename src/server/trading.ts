@@ -72,10 +72,11 @@ export async function placeOrder(input: OrderInput): Promise<OrderResult> {
 /**
  * 结算市场:赢方每份额兑付 1 积分,输方归零。批量写入后标记市场为已结算。
  */
-export async function resolveMarket(marketId: string, outcome: "YES" | "NO"): Promise<void> {
+export async function resolveMarket(marketId: string, outcome: "YES" | "NO", resolutionNote?: string): Promise<void> {
   await db.$transaction(async (tx) => {
     const market = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
     if (market.status === "RESOLVED") throw new Error("市场已结算");
+    if (market.status === "CANCELED") throw new Error("市场已下线");
 
     const positions = await tx.position.findMany({ where: { marketId } });
     for (const p of positions) {
@@ -90,7 +91,53 @@ export async function resolveMarket(marketId: string, outcome: "YES" | "NO"): Pr
 
     await tx.market.update({
       where: { id: marketId },
-      data: { status: "RESOLVED", resolution: outcome, resolvedAt: new Date() },
+      data: { status: "RESOLVED", resolution: outcome, resolutionNote, resolvedAt: new Date() },
+    });
+  });
+}
+
+/**
+ * 下线市场并退款:撤销该市场所有交易现金流,清空持仓和 AMM 状态。
+ * BUY 曾扣积分,下线时退回;SELL 曾返还积分,下线时扣回。
+ */
+export async function cancelMarketAndRefund(marketId: string, reason = "admin_removed"): Promise<void> {
+  await db.$transaction(async (tx) => {
+    const market = await tx.market.findUniqueOrThrow({ where: { id: marketId } });
+    if (market.status === "RESOLVED") throw new Error("已结算市场不能下线退款");
+    if (market.status === "CANCELED") return;
+
+    const trades = await tx.trade.findMany({
+      where: { marketId },
+      select: { userId: true, action: true, costPoints: true },
+    });
+    const refundByUser = new Map<string, number>();
+    for (const trade of trades) {
+      const delta = trade.action === "BUY" ? trade.costPoints : -trade.costPoints;
+      refundByUser.set(trade.userId, (refundByUser.get(trade.userId) ?? 0) + delta);
+    }
+
+    for (const [userId, pointsDelta] of refundByUser) {
+      if (pointsDelta !== 0) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { pointsBalance: { increment: pointsDelta } },
+        });
+      }
+    }
+
+    await tx.position.updateMany({
+      where: { marketId },
+      data: { yesShares: 0, noShares: 0 },
+    });
+    await tx.market.update({
+      where: { id: marketId },
+      data: {
+        status: "CANCELED",
+        cancelReason: reason,
+        canceledAt: new Date(),
+        qYes: 0,
+        qNo: 0,
+      },
     });
   });
 }
