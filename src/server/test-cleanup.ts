@@ -17,6 +17,7 @@ function testMarketWhere() {
       { title: "info test", category: "test" },
       { title: "测试问题", category: "test" },
       { title: { startsWith: "冒烟测试:" }, category: "test" },
+      { generatedBy: { startsWith: "HOT_MARKET_" } },
     ],
   };
 }
