@@ -4,6 +4,7 @@ import { PlusCircle, Trophy, Wallet, Zap } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { SearchBox } from "@/components/SearchBox";
 import { UserMenu } from "@/components/UserMenu";
 
@@ -20,13 +21,8 @@ export async function SiteHeader() {
   return (
     <header className="glass sticky top-0 z-40 border-b border-primary/20 shadow-[0_12px_50px_color-mix(in_oklch,black,transparent_72%)]">
       <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-4 px-4 py-2">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-lg font-black tracking-tight">
-          <span className="neon-scan neon-button flex h-9 w-9 items-center justify-center rounded-xl text-sm text-primary-foreground">
-            D
-          </span>
-          <span className="hidden sm:inline">
-            Deal<span className="text-primary neon-text-glow">Info</span>
-          </span>
+        <Link href="/" aria-label="DealInfo 首页" className="group flex shrink-0 items-center">
+          <BrandLogo />
         </Link>
 
         <div className="min-w-56 flex-1 px-0 sm:px-2">
