@@ -116,17 +116,16 @@ async function getHotMarketCreatorId() {
   return bot.id;
 }
 
-export async function fetchGoogleNewsRss(category: HotMarketCategory): Promise<HotNewsItem[]> {
+export function buildGoogleNewsRssUrl(query: string): string {
   const url = new URL("https://news.google.com/rss/search");
-  url.searchParams.set("q", `${category.query} when:1d`);
+  url.searchParams.set("q", `${query} when:1d`);
   url.searchParams.set("hl", "zh-CN");
   url.searchParams.set("gl", "CN");
   url.searchParams.set("ceid", "CN:zh-Hans");
+  return url.toString();
+}
 
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`抓取 ${category.category} 热点失败: ${res.status}`);
-  const xml = await res.text();
-
+export function parseGoogleNewsXml(xml: string): HotNewsItem[] {
   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((match) => {
     const itemXml = match[1];
     const title = stripHtml(itemXml.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>|<title>([\s\S]*?)<\/title>/)?.[1] ?? itemXml.match(/<title>([\s\S]*?)<\/title>/)?.[1] ?? "");
@@ -144,6 +143,12 @@ export async function fetchGoogleNewsRss(category: HotMarketCategory): Promise<H
       snippet: description,
     };
   }).filter((item) => item.title.length >= 6 && item.url.startsWith("http"));
+}
+
+export async function fetchGoogleNewsRss(category: HotMarketCategory): Promise<HotNewsItem[]> {
+  const res = await fetch(buildGoogleNewsRssUrl(category.query), { cache: "no-store" });
+  if (!res.ok) throw new Error(`抓取 ${category.category} 热点失败: ${res.status}`);
+  return parseGoogleNewsXml(await res.text());
 }
 
 export async function generateDailyHotMarkets(options: GenerateHotMarketsOptions = {}) {
@@ -221,11 +226,15 @@ function getCoreTerms(market: AutoResolvableMarket) {
     .slice(0, 8);
 }
 
-export async function decideOutcomeFromNews(market: AutoResolvableMarket): Promise<"YES" | "NO" | null> {
+export function buildResolveQuery(market: AutoResolvableMarket): string | null {
   const terms = getCoreTerms(market);
   if (terms.length === 0) return null;
-  const query = `${terms.slice(0, 5).join(" ")} 确认 官方 结果 后续`;
-  const items = await fetchGoogleNewsRss({ category: market.category, query }).catch(() => []);
+  return `${terms.slice(0, 5).join(" ")} 确认 官方 结果 后续`;
+}
+
+export function decideOutcomeFromItems(market: AutoResolvableMarket, items: HotNewsItem[]): "YES" | "NO" | null {
+  const terms = getCoreTerms(market);
+  if (terms.length === 0) return null;
   const haystack = items.map((item) => `${item.title} ${item.snippet ?? ""}`).join(" ");
   const matchedTerms = terms.filter((term) => haystack.includes(term));
   const hasConfirmation = /确认|宣布|官方|结果|获批|通过|夺冠|签约|发布|上线|达成|发生|完成/.test(haystack);
@@ -235,11 +244,19 @@ export async function decideOutcomeFromNews(market: AutoResolvableMarket): Promi
   return null;
 }
 
-export async function autoResolveDueHotMarkets(options: AutoResolveOptions = {}) {
+export async function decideOutcomeFromNews(market: AutoResolvableMarket): Promise<"YES" | "NO" | null> {
+  const query = buildResolveQuery(market);
+  if (!query) return null;
+  const items = await fetchGoogleNewsRss({ category: market.category, query }).catch(() => []);
+  return decideOutcomeFromItems(market, items);
+}
+
+export async function findDueHotMarkets(
+  options: { now?: Date; generatedBy?: string } = {},
+): Promise<AutoResolvableMarket[]> {
   const now = options.now ?? new Date();
   const generatedBy = options.generatedBy ?? DEFAULT_GENERATOR;
-  const decideOutcome = options.decideOutcome ?? decideOutcomeFromNews;
-  const markets = await db.market.findMany({
+  return db.market.findMany({
     where: {
       status: "OPEN",
       generatedBy,
@@ -255,6 +272,13 @@ export async function autoResolveDueHotMarkets(options: AutoResolveOptions = {})
       sourceName: true,
     },
   });
+}
+
+export async function autoResolveDueHotMarkets(options: AutoResolveOptions = {}) {
+  const now = options.now ?? new Date();
+  const generatedBy = options.generatedBy ?? DEFAULT_GENERATOR;
+  const decideOutcome = options.decideOutcome ?? decideOutcomeFromNews;
+  const markets = await findDueHotMarkets({ now, generatedBy });
 
   const results: Array<"resolved" | "skipped"> = [];
   for (let i = 0; i < markets.length; i += AUTO_RESOLVE_CONCURRENCY) {
