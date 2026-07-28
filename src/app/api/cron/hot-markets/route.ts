@@ -1,16 +1,12 @@
+import { authorizeCron } from "@/lib/cron-auth";
 import { runDailyHotMarketJob } from "@/server/hot-markets";
 
 export const dynamic = "force-dynamic";
 
-function authorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  if (!secret) return process.env.NODE_ENV !== "production";
-  const auth = request.headers.get("authorization");
-  return auth === `Bearer ${secret}`;
-}
-
+// 旧接口:服务器直接抓 Google News。仅在墙外(本地/手动)可用;
+// 生产的定时任务改走 /plan + /run(见 scripts/hot-markets-runner.mjs)。
 export async function GET(request: Request) {
-  if (!authorized(request)) {
+  if (!authorizeCron(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

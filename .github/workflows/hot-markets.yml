@@ -9,13 +9,18 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger hot market job
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # runner 在墙外,负责抓 Google News 并把原始数据送回服务器解析入库
+      # (服务器在阿里云北京,直连不了 Google)
+      - name: Fetch hot news on runner and push to server
         env:
           DEALINFO_BASE_URL: ${{ secrets.DEALINFO_BASE_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-        run: |
-          test -n "$DEALINFO_BASE_URL"
-          test -n "$CRON_SECRET"
-          curl -fsS \
-            -H "Authorization: Bearer $CRON_SECRET" \
-            "$DEALINFO_BASE_URL/api/cron/hot-markets"
+        run: node scripts/hot-markets-runner.mjs
