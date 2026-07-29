@@ -1,6 +1,7 @@
 import { authorizeCron } from "@/lib/cron-auth";
 import {
   HOT_MARKET_CATEGORIES,
+  buildCategoryFeedUrl,
   buildGoogleNewsRssUrl,
   buildResolveQuery,
   findDueHotMarkets,
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
 
   const generate = HOT_MARKET_CATEGORIES.map((category) => ({
     category: category.category,
-    url: buildGoogleNewsRssUrl(category.query),
+    url: buildCategoryFeedUrl(category),
   }));
 
   const dueMarkets = await findDueHotMarkets();

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildCategoryFeedUrl,
   buildGoogleNewsRssUrl,
+  buildGoogleNewsTopicUrl,
   buildResolveQuery,
   decideOutcomeFromItems,
   parseGoogleNewsXml,
@@ -18,6 +20,23 @@ describe("buildGoogleNewsRssUrl", () => {
     expect(decoded).toContain("科技 AI when:1d");
     expect(url).toContain("hl=zh-CN");
     expect(url).toContain("ceid=CN%3Azh-Hans");
+  });
+});
+
+describe("buildGoogleNewsTopicUrl / buildCategoryFeedUrl", () => {
+  it("主题 URL 指向 headlines/section/topic", () => {
+    const url = buildGoogleNewsTopicUrl("TECHNOLOGY");
+    expect(url).toContain("news.google.com/rss/headlines/section/topic/TECHNOLOGY");
+    expect(url).toContain("ceid=CN%3Azh-Hans");
+  });
+
+  it("有 topic 走主题头条,无 topic 走搜索兜底", () => {
+    expect(buildCategoryFeedUrl({ category: "科技", topic: "TECHNOLOGY" })).toContain(
+      "/topic/TECHNOLOGY",
+    );
+    const search = buildCategoryFeedUrl({ category: "游戏电竞", query: "游戏" });
+    expect(search).toContain("/rss/search");
+    expect(decodeURIComponent(search).replace(/\+/g, " ")).toContain("游戏 when:1d");
   });
 });
 

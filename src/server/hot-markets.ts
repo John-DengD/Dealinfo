@@ -3,7 +3,10 @@ import { resolveMarket } from "./trading";
 
 export interface HotMarketCategory {
   category: string;
-  query: string;
+  // 生成新市场时优先用 Google News 主题头条(已按热度排序);
+  // 没有对应主题的分类用 query 做搜索兜底。
+  topic?: string;
+  query?: string;
 }
 
 export interface HotNewsItem {
@@ -35,22 +38,24 @@ export interface AutoResolvableMarket {
   sourceName: string | null;
 }
 
+// 有对应 Google News 标准主题的分类用 topic(头条按热度排序,取前几条即最热);
+// 政治/游戏电竞/加密无对应主题,用宽泛搜索词兜底。
 export const HOT_MARKET_CATEGORIES: HotMarketCategory[] = [
-  { category: "体育", query: "体育 热点 赛事 夺冠 转会 伤病" },
-  { category: "科技", query: "科技 热点 AI 芯片 手机 产品发布" },
-  { category: "娱乐明星", query: "娱乐 明星 电影 音乐 综艺 热点" },
-  { category: "财经", query: "财经 热点 股票 利率 财报 IPO" },
-  { category: "国际", query: "国际 热点 外交 冲突 选举 协议" },
-  { category: "政治", query: "政治 热点 政策 选举 法案 民调" },
-  { category: "健康", query: "健康 热点 医药 疫情 FDA 临床" },
-  { category: "科学", query: "科学 热点 航天 气候 物理 生物" },
-  { category: "游戏电竞", query: "游戏 电竞 热点 发布 比赛 战队" },
-  { category: "加密/Web3", query: "加密 Web3 热点 比特币 以太坊 ETF" },
+  { category: "体育", topic: "SPORTS" },
+  { category: "科技", topic: "TECHNOLOGY" },
+  { category: "娱乐明星", topic: "ENTERTAINMENT" },
+  { category: "财经", topic: "BUSINESS" },
+  { category: "国际", topic: "WORLD" },
+  { category: "政治", query: "政治" },
+  { category: "健康", topic: "HEALTH" },
+  { category: "科学", topic: "SCIENCE" },
+  { category: "游戏电竞", query: "游戏" },
+  { category: "加密/Web3", query: "加密货币" },
 ];
 
 const DEFAULT_GENERATOR = "daily_hot_markets";
 const MARKET_DURATION_DAYS = 7;
-const MAX_MARKETS_PER_CATEGORY = 10;
+const MAX_MARKETS_PER_CATEGORY = 3;
 const AUTO_RESOLVE_CONCURRENCY = 6;
 
 function startOfUtcDay(date: Date) {
@@ -125,6 +130,20 @@ export function buildGoogleNewsRssUrl(query: string): string {
   return url.toString();
 }
 
+export function buildGoogleNewsTopicUrl(topic: string): string {
+  const url = new URL(`https://news.google.com/rss/headlines/section/topic/${topic}`);
+  url.searchParams.set("hl", "zh-CN");
+  url.searchParams.set("gl", "CN");
+  url.searchParams.set("ceid", "CN:zh-Hans");
+  return url.toString();
+}
+
+// 分类生成用的 RSS 地址:有主题走主题头条(按热度),否则搜索兜底。
+export function buildCategoryFeedUrl(category: HotMarketCategory): string {
+  if (category.topic) return buildGoogleNewsTopicUrl(category.topic);
+  return buildGoogleNewsRssUrl(category.query ?? category.category);
+}
+
 export function parseGoogleNewsXml(xml: string): HotNewsItem[] {
   return [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map((match) => {
     const itemXml = match[1];
@@ -146,7 +165,7 @@ export function parseGoogleNewsXml(xml: string): HotNewsItem[] {
 }
 
 export async function fetchGoogleNewsRss(category: HotMarketCategory): Promise<HotNewsItem[]> {
-  const res = await fetch(buildGoogleNewsRssUrl(category.query), { cache: "no-store" });
+  const res = await fetch(buildCategoryFeedUrl(category), { cache: "no-store" });
   if (!res.ok) throw new Error(`抓取 ${category.category} 热点失败: ${res.status}`);
   return parseGoogleNewsXml(await res.text());
 }
