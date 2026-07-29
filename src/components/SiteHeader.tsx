@@ -19,23 +19,23 @@ export async function SiteHeader() {
   }
 
   return (
-    <header className="glass sticky top-0 z-40 border-b border-primary/20 shadow-[0_12px_50px_color-mix(in_oklch,black,transparent_72%)]">
-      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-4 px-4 py-2">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
+      <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center gap-3 px-4 py-2">
         <Link href="/" aria-label="DealInfo 首页" className="group flex shrink-0 items-center">
           <BrandLogo />
         </Link>
 
-        <div className="min-w-56 flex-1 px-0 sm:px-2">
+        <div className="min-w-48 flex-1 px-0 sm:px-2">
           <Suspense>
             <SearchBox />
           </Suspense>
         </div>
 
         <nav className="hidden items-center gap-1 text-sm text-muted-foreground md:flex">
-          <Link href="/leaderboard" className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/35 px-3 py-2 hover:border-primary/50 hover:bg-primary/10 hover:text-foreground">
+          <Link href="/leaderboard" className="flex items-center gap-1.5 rounded-md px-3 py-2 hover:bg-secondary hover:text-foreground">
             <Trophy className="h-4 w-4" /> 排行榜
           </Link>
-          <Link href="/propose" className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/35 px-3 py-2 hover:border-primary/50 hover:bg-primary/10 hover:text-foreground">
+          <Link href="/propose" className="flex items-center gap-1.5 rounded-md px-3 py-2 hover:bg-secondary hover:text-foreground">
             <PlusCircle className="h-4 w-4" /> 提议
           </Link>
         </nav>
@@ -45,7 +45,7 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/portfolio"
-                className="neon-scan flex items-center gap-1.5 rounded-full border border-yes/35 bg-yes/10 px-3 py-2 text-sm transition-colors hover:border-yes/70"
+                className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm transition-colors hover:border-primary/50"
               >
                 <Wallet className="h-4 w-4 text-yes" />
                 <span className="num font-semibold">{points !== null ? Math.round(points).toLocaleString() : "—"}</span>
@@ -60,7 +60,7 @@ export async function SiteHeader() {
           ) : (
             <>
               <Button render={<Link href="/login">登录</Link>} nativeButton={false} variant="ghost" size="sm" />
-              <Button render={<Link href="/register"><Zap className="h-3.5 w-3.5" />注册</Link>} nativeButton={false} size="sm" className="neon-button" />
+              <Button render={<Link href="/register"><Zap className="h-3.5 w-3.5" />注册</Link>} nativeButton={false} size="sm" />
             </>
           )}
         </div>

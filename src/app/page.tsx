@@ -46,7 +46,7 @@ export default async function HomePage({
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {feed.map((item, i) => (
             <div key={item.kind === "event" ? `e-${item.event.id}` : `m-${item.market.id}`} className="animate-fade-up" style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}>
               {item.kind === "event" ? <EventCard event={item.event} /> : <MarketCard market={item.market} />}
