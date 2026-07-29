@@ -3,6 +3,7 @@ import {
   autoResolveDueHotMarkets,
   decideOutcomeFromItems,
   generateDailyHotMarkets,
+  normalizeUrl,
   parseGoogleNewsXml,
   type HotNewsItem,
 } from "@/server/hot-markets";
@@ -12,6 +13,7 @@ export const dynamic = "force-dynamic";
 interface RunBody {
   generate?: Array<{ category: string; xml: string }>;
   resolve?: Array<{ id: string; xml: string }>;
+  images?: Array<{ link: string; imageUrl: string }>;
 }
 
 // 接收 runner 从墙外抓来的原始 RSS XML,服务器解析后建市场 + 自动结算。
@@ -41,6 +43,13 @@ export async function POST(request: Request) {
     itemsByMarket.set(entry.id, parseGoogleNewsXml(entry.xml));
   }
 
+  // runner 抓来的 og:image,按归一化后的文章 URL 建索引
+  const imageByUrl = new Map<string, string>();
+  for (const entry of body.images ?? []) {
+    if (!entry?.link || typeof entry.imageUrl !== "string" || !entry.imageUrl) continue;
+    imageByUrl.set(normalizeUrl(entry.link), entry.imageUrl);
+  }
+
   const errors: string[] = [];
 
   let generated: Awaited<ReturnType<typeof generateDailyHotMarkets>> = { created: 0, skipped: 0 };
@@ -48,6 +57,7 @@ export async function POST(request: Request) {
     generated = await generateDailyHotMarkets({
       now,
       fetchItems: async (category) => itemsByCategory.get(category.category) ?? [],
+      imageForUrl: (sourceUrl) => imageByUrl.get(sourceUrl) ?? null,
     });
   } catch (error) {
     errors.push(`generate: ${error instanceof Error ? error.message : String(error)}`);
