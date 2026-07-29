@@ -24,13 +24,13 @@ export function CategoryNav({ categories, active }: { categories: string[]; acti
           <Link
             key={t}
             href={on ? "/" : `/?cat=${encodeURIComponent(t)}`}
-            className={`neon-scan flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-4 text-sm font-semibold transition-all ${
+            className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors ${
               on
-                ? "border-primary/70 bg-primary/20 text-foreground shadow-[0_0_24px_color-mix(in_oklch,var(--primary),transparent_72%)]"
-                : "border-border/70 bg-secondary/45 text-muted-foreground hover:border-primary/50 hover:bg-primary/10 hover:text-foreground"
+                ? "border-primary/60 bg-primary/10 font-semibold text-foreground"
+                : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"
             }`}
           >
-            <Icon className={`h-4 w-4 ${on ? "text-primary neon-text-glow" : ""}`} />
+            <Icon className={`h-4 w-4 ${on ? "text-primary" : ""}`} />
             {t}
           </Link>
         );
