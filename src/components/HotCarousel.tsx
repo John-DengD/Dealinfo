@@ -43,7 +43,7 @@ export function HotCarousel({ items }: { items: FeedItem[] }) {
 
   return (
     <div
-      className="relative mb-6 overflow-hidden rounded-3xl border border-primary/20 bg-background/50 backdrop-blur-xl"
+      className="relative mb-6 overflow-hidden rounded-2xl border border-border bg-card"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
@@ -62,24 +62,19 @@ export function HotCarousel({ items }: { items: FeedItem[] }) {
             {/* 真实配图(子项目②),没有就霓虹渐变占位 */}
             {imageUrl ? (
               <div
-                className="h-40 rounded-2xl border border-border/50 bg-cover bg-center sm:h-full sm:min-h-[12rem]"
+                className="h-40 rounded-xl border border-border bg-muted bg-cover bg-center sm:h-full sm:min-h-[12rem]"
                 style={{ backgroundImage: `url(${imageUrl})` }}
                 role="img"
                 aria-label={title}
               />
             ) : (
-              <div
-                className="relative grid h-40 place-items-center overflow-hidden rounded-2xl sm:h-full sm:min-h-[12rem]"
-                style={{
-                  background: `radial-gradient(circle at 30% 25%, color-mix(in oklch, ${accent}, transparent 45%), transparent 70%), linear-gradient(135deg, color-mix(in oklch, var(--primary), transparent 82%), color-mix(in oklch, ${accent}, transparent 86%))`,
-                }}
-              >
+              <div className="grid h-40 place-items-center rounded-xl border border-border bg-muted sm:h-full sm:min-h-[12rem]">
                 {marketDisplay ? (
-                  <span className="num neon-text-glow text-5xl font-black" style={{ color: accent }}>
+                  <span className="num text-5xl font-black" style={{ color: accent }}>
                     {marketDisplay.probabilityPercent}%
                   </span>
                 ) : (
-                  <Layers className="h-14 w-14 text-primary" />
+                  <Layers className="h-12 w-12 text-muted-foreground" />
                 )}
               </div>
             )}
@@ -93,10 +88,10 @@ export function HotCarousel({ items }: { items: FeedItem[] }) {
 
               {item.kind === "market" && marketDisplay ? (
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <span className="rounded-xl bg-yes px-4 py-2 text-sm font-black text-yes-foreground shadow-[0_0_26px_color-mix(in_oklch,var(--yes),transparent_68%)]">
+                  <span className="rounded-lg border border-yes/25 bg-yes/10 px-4 py-2 text-sm font-semibold text-yes">
                     Buy Yes · {marketDisplay.yesPrice}¢
                   </span>
-                  <span className="rounded-xl border border-no/40 bg-no/20 px-4 py-2 text-sm font-black text-no">
+                  <span className="rounded-lg border border-no/25 bg-no/10 px-4 py-2 text-sm font-semibold text-no">
                     Buy No · {marketDisplay.noPrice}¢
                   </span>
                 </div>
