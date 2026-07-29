@@ -47,7 +47,25 @@ model User {
   infoCards     InfoCard[]
   cardVotes     CardVote[]
   markets       Market[]
+  events        Event[]
   recharges     Recharge[]
+}
+
+// 多结果事件:一个事件挂多个各自独立的二元子市场(Polymarket 式)。
+model Event {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  category    String
+  status      MarketStatus @default(PENDING)
+  closesAt    DateTime
+  imageUrl    String?
+  creator     User         @relation(fields: [creatorId], references: [id])
+  creatorId   String
+  createdAt   DateTime     @default(now())
+  markets     Market[]
+
+  @@index([status, closesAt])
 }
 
 model Market {
@@ -73,12 +91,17 @@ model Market {
   qYes              Float        @default(0)
   qNo               Float        @default(0)
   liquidityB        Float        @default(100)
+  imageUrl          String?
+  event             Event?       @relation(fields: [eventId], references: [id])
+  eventId           String?
+  outcomeLabel      String?
   positions         Position[]
   trades            Trade[]
   infoCards         InfoCard[]
 
   @@index([generatedBy, generationDate])
   @@index([status, closesAt])
+  @@index([eventId])
 }
 
 model Position {

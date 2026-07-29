@@ -21,6 +21,8 @@ export interface GenerateHotMarketsOptions {
   now?: Date;
   generatedBy?: string;
   fetchItems?: (category: HotMarketCategory) => Promise<HotNewsItem[]>;
+  /** 按 sourceUrl 返回配图(runner 抓来的 og:image);无则返回空。 */
+  imageForUrl?: (sourceUrl: string) => string | null | undefined;
 }
 
 export interface AutoResolveOptions {
@@ -66,7 +68,7 @@ function stripHtml(value: string) {
   return value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
 }
 
-function normalizeUrl(url: string) {
+export function normalizeUrl(url: string) {
   try {
     const parsed = new URL(url);
     parsed.hash = "";
@@ -190,6 +192,7 @@ export async function generateDailyHotMarkets(options: GenerateHotMarketsOptions
     sourcePublishedAt: Date | null;
     generatedBy: string;
     generationDate: Date;
+    imageUrl: string | null;
   }> = [];
   const seenSourceUrls = new Set<string>();
 
@@ -215,6 +218,7 @@ export async function generateDailyHotMarkets(options: GenerateHotMarketsOptions
         sourcePublishedAt: item.publishedAt ?? null,
         generatedBy,
         generationDate,
+        imageUrl: options.imageForUrl?.(sourceUrl) ?? null,
       });
     }
     skipped += Math.max(items.length - MAX_MARKETS_PER_CATEGORY, 0);

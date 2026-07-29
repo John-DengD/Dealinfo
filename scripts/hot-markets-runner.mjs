@@ -21,6 +21,8 @@ if (!BASE || !SECRET) {
 
 const authHeaders = { authorization: `Bearer ${SECRET}` };
 
+const IMAGES_PER_CATEGORY = 4; // 每分类抓前几条文章的 og:image(略多于 MAX_MARKETS_PER_CATEGORY 以覆盖去重)
+
 async function fetchXml(url) {
   const res = await fetch(url, {
     headers: { "user-agent": "Mozilla/5.0 (compatible; DealinfoBot/1.0)" },
@@ -28,6 +30,38 @@ async function fetchXml(url) {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.text();
+}
+
+function extractItemLinks(xml, max) {
+  const links = [];
+  for (const m of xml.matchAll(/<item>([\s\S]*?)<\/item>/g)) {
+    const link = (m[1].match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? "").trim();
+    if (link.startsWith("http")) links.push(link);
+    if (links.length >= max) break;
+  }
+  return links;
+}
+
+function extractOgImage(html) {
+  const m =
+    html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i) ||
+    html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+  return m ? m[1] : null;
+}
+
+// 跟随 Google News 跳转到发布源,取 og:image。抓不到就返回 null(前端回退霓虹占位)。
+async function fetchOgImage(articleUrl) {
+  try {
+    const res = await fetch(articleUrl, {
+      redirect: "follow",
+      headers: { "user-agent": "Mozilla/5.0 (compatible; DealinfoBot/1.0)" },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+    return extractOgImage(await res.text());
+  } catch {
+    return null;
+  }
 }
 
 async function main() {
@@ -67,12 +101,23 @@ async function main() {
     process.exit(1);
   }
 
-  console.log(`抓取完成: 生成 ${generate.length}/${planGenerate.length} 分类, 结算 ${resolve.length}/${planResolve.length} 市场`);
+  // 为将要建的热点抓 og:image(墙外)——抓不到就算了,前端会回退霓虹占位
+  const images = [];
+  for (const g of generate) {
+    for (const link of extractItemLinks(g.xml, IMAGES_PER_CATEGORY)) {
+      const imageUrl = await fetchOgImage(link);
+      if (imageUrl) images.push({ link, imageUrl });
+    }
+  }
+
+  console.log(
+    `抓取完成: 生成 ${generate.length}/${planGenerate.length} 分类, 结算 ${resolve.length}/${planResolve.length} 市场, 配图 ${images.length} 张`,
+  );
 
   const runRes = await fetch(`${BASE}/api/cron/hot-markets/run`, {
     method: "POST",
     headers: { ...authHeaders, "content-type": "application/json" },
-    body: JSON.stringify({ generate, resolve }),
+    body: JSON.stringify({ generate, resolve, images }),
   });
   const text = await runRes.text();
   if (!runRes.ok) {
