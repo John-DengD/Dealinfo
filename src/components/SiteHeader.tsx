@@ -53,8 +53,6 @@ export async function SiteHeader() {
               <UserMenu
                 name={session.user.name ?? session.user.email ?? "?"}
                 points={points}
-                userId={session.user.id}
-                email={session.user.email}
               />
             </>
           ) : (

@@ -5,26 +5,32 @@ import Link from "next/link";
 import { Wallet, User, LogOut, CreditCard } from "lucide-react";
 import { signOutAction } from "@/server/auth-actions";
 
-const STRIPE_LINK = "https://buy.stripe.com/test_8x200jfJj9ysenhdXP5Ne00";
-
 export function UserMenu({
   name,
   points,
-  userId,
-  email,
 }: {
   name: string;
   points: number | null;
-  userId: string;
-  email?: string | null;
 }) {
   const [open, setOpen] = useState(false);
+  const [recharging, setRecharging] = useState(false);
+  const [rechargeError, setRechargeError] = useState<string | null>(null);
   const initial = (name || "?").slice(0, 1).toUpperCase();
 
-  function recharge() {
-    const params = new URLSearchParams({ client_reference_id: userId });
-    if (email) params.set("prefilled_email", email);
-    window.location.href = `${STRIPE_LINK}?${params.toString()}`;
+  async function recharge() {
+    setRechargeError(null);
+    setRecharging(true);
+    try {
+      const response = await fetch("/api/stripe/checkout", { method: "POST" });
+      const data = (await response.json().catch(() => null)) as { url?: unknown; error?: string } | null;
+      if (!response.ok || typeof data?.url !== "string") {
+        throw new Error(data?.error ?? "无法打开充值页面");
+      }
+      window.location.assign(data.url);
+    } catch (e) {
+      setRecharging(false);
+      setRechargeError(e instanceof Error ? e.message : "无法打开充值页面");
+    }
   }
 
   return (
@@ -59,10 +65,12 @@ export function UserMenu({
 
             <button
               onClick={recharge}
+              disabled={recharging}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-yes hover:bg-yes/10"
             >
-              <CreditCard className="h-4 w-4" /> 充值积分
+              <CreditCard className="h-4 w-4" /> {recharging ? "打开中..." : "充值积分"}
             </button>
+            {rechargeError && <div className="px-3 pb-2 text-xs text-no">{rechargeError}</div>}
 
             <form action={signOutAction}>
               <button
