@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildRechargeCheckoutParams, resolveAppOrigin } from "./recharge";
 
 describe("recharge checkout", () => {
-  it("creates a Stripe Checkout session that returns to the homepage", () => {
+  it("creates a one-point Stripe Checkout session that returns to the homepage", () => {
     const params = buildRechargeCheckoutParams({
       userId: "user_123",
       email: "me@example.com",
@@ -18,7 +18,7 @@ describe("recharge checkout", () => {
     expect(params.mode).toBe("payment");
     expect(params.line_items).toHaveLength(1);
     expect(params.line_items?.[0]).toMatchObject({
-      quantity: 10,
+      quantity: 1,
       adjustable_quantity: {
         enabled: true,
         minimum: 1,

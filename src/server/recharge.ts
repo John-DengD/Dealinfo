@@ -26,7 +26,7 @@ type RechargeCheckoutInput = {
 
 const DEFAULT_CURRENCY = "usd";
 const DEFAULT_UNIT_AMOUNT_CENTS = 100;
-const DEFAULT_QUANTITY = 10;
+const DEFAULT_QUANTITY = 1;
 const DEFAULT_MAX_QUANTITY = 1000;
 
 export function resolveAppOrigin(request: Request, env: AppOriginEnv = process.env): string {
