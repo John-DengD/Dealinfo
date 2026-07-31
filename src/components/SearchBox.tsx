@@ -13,7 +13,7 @@ export function SearchBox() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const q = value.trim();
-    if (q) track(cv.search, { metadata: { query: q } });
+    if (q) track(cv.search, { query: q });
     router.push(q ? `/?q=${encodeURIComponent(q)}` : "/");
   }
 
