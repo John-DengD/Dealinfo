@@ -32,7 +32,7 @@ export function TradePanel({ marketId, probYes, tradeable, loggedIn }: Props) {
   const visibleQuote = validShares ? quote : null;
 
   useEffect(() => {
-    track(cv.viewContent, { metadata: { product_id: marketId } });
+    track(cv.viewContent, { product_id: marketId });
   }, [marketId]);
 
   useEffect(() => {
