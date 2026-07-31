@@ -3,6 +3,7 @@ import type Stripe from "stripe";
 import { Prisma } from "@prisma/client";
 import { getStripe, centsToPoints } from "@/lib/stripe";
 import { db } from "@/lib/db";
+import { cv, tracker } from "@/lib/tracker";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,12 +49,26 @@ export async function POST(req: NextRequest) {
         });
       } catch (e) {
         // 唯一冲突 = 该笔已处理过,安全忽略
-        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-          return new Response("already processed", { status: 200 });
+        if (!(e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")) {
+          // 其他错误 → 返回 500,让 Stripe 重试
+          return new Response("processing error", { status: 500 });
         }
-        // 其他错误 → 返回 500,让 Stripe 重试
-        return new Response("processing error", { status: 500 });
       }
+
+      const vid = session.metadata?.hy_vid;
+      await tracker.trackImmediate(cv.purchase, {
+        distinctId: userId,
+        eventId: session.id,
+        ...(vid ? { visitorId: vid } : {}),
+        identity: { email: session.customer_email ?? undefined },
+        revenue: amountCents / 100,
+        currency: (session.currency ?? "usd").toUpperCase(),
+        metadata: {
+          order_id: session.id,
+          payment_status: session.payment_status,
+          points,
+        },
+      });
     }
   }
 

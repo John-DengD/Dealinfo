@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { auth } from "@/lib/auth";
+import { visitorIdFromCookie } from "@/lib/tracker";
 import { createRechargeCheckoutSession, resolveAppOrigin } from "@/server/recharge";
 
 export const runtime = "nodejs";
@@ -16,6 +18,7 @@ export async function POST(request: Request) {
       userId: session.user.id,
       email: session.user.email,
       origin: resolveAppOrigin(request),
+      visitorId: await visitorIdFromCookie(await cookies()),
     });
     return NextResponse.json({ url: checkout.url });
   } catch {
