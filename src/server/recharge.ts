@@ -21,6 +21,7 @@ type RechargeCheckoutInput = {
   userId: string;
   email?: string | null;
   origin: string;
+  visitorId?: string;
   env?: RechargeEnv;
 };
 
@@ -53,6 +54,7 @@ export function buildRechargeCheckoutParams({
   userId,
   email,
   origin,
+  visitorId,
   env = process.env,
 }: RechargeCheckoutInput): Stripe.Checkout.SessionCreateParams {
   const appOrigin = normalizeOrigin(origin);
@@ -95,6 +97,7 @@ export function buildRechargeCheckoutParams({
     metadata: {
       kind: "points_recharge",
       userId,
+      ...(visitorId ? { hy_vid: visitorId } : {}),
     },
     success_url: `${appOrigin}/?recharge=success&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${appOrigin}/?recharge=cancelled`,

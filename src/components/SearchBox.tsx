@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { track, cv } from "@hellyeah/x-ray";
 import { Search } from "lucide-react";
 
 export function SearchBox() {
@@ -12,6 +13,7 @@ export function SearchBox() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const q = value.trim();
+    if (q) track(cv.search, { metadata: { query: q } });
     router.push(q ? `/?q=${encodeURIComponent(q)}` : "/");
   }
 

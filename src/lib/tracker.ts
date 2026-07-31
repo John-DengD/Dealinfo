@@ -1,7 +1,7 @@
 import { createXRay } from "@hellyeah/x-ray/server";
 
 export const TRACKER_ID =
-  process.env.HELLYEAH_TRACKER_ID || "019efdba-f2f0-7000-82fa-bd78eb65f951";
+  process.env.HELLYEAH_TRACKER_ID || "019fb71a-b32a-7000-9741-7f660327d2a3";
 
 export const tracker = createXRay(TRACKER_ID, {
   env: process.env.HELLYEAH_TRACKER_ENV,

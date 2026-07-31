@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { track, cv } from "@hellyeah/x-ray";
 import { Wallet, User, LogOut, CreditCard } from "lucide-react";
 import { signOutAction } from "@/server/auth-actions";
 
@@ -26,6 +27,7 @@ export function UserMenu({
       if (!response.ok || typeof data?.url !== "string") {
         throw new Error(data?.error ?? "无法打开充值页面");
       }
+      track(cv.beginCheckout);
       window.location.assign(data.url);
     } catch (e) {
       setRecharging(false);
