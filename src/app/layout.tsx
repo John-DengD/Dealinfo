@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import { Analytics } from "@hellyeah/x-ray/next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -33,20 +32,16 @@ export default function RootLayout({
       lang="zh"
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script async src={GOOGLE_ADS_SCRIPT_SRC}></script>
+        <script
+          dangerouslySetInnerHTML={{ __html: GOOGLE_ADS_INIT_SCRIPT }}
+        ></script>
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground tabular-nums">
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <Toaster richColors position="top-center" />
-        <Script
-          id="google-ads-tag"
-          src={GOOGLE_ADS_SCRIPT_SRC}
-          strategy="afterInteractive"
-        />
-        <Script
-          id="google-ads-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: GOOGLE_ADS_INIT_SCRIPT }}
-        />
         <Analytics
           websiteId={TRACKER_ID}
           env={process.env.NEXT_PUBLIC_HELLYEAH_TRACKER_ENV}
