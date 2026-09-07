@@ -21,3 +21,21 @@ describe("Google Ads head tag", () => {
     expect(layoutSource).not.toContain("useServerInsertedHTML");
   });
 });
+
+describe("Google Tag Manager install", () => {
+  it("renders the GTM script in head and noscript iframe at the start of body", () => {
+    const layoutSource = readFileSync(
+      path.join(rootDir, "src/app/layout.tsx"),
+      "utf8"
+    );
+
+    expect(layoutSource).toContain(
+      "dangerouslySetInnerHTML={{ __html: GOOGLE_TAG_MANAGER_INIT_SCRIPT }}"
+    );
+    expect(layoutSource).toContain("<noscript>");
+    expect(layoutSource).toContain('src={GOOGLE_TAG_MANAGER_IFRAME_SRC}');
+    expect(layoutSource.indexOf("<noscript>")).toBeLessThan(
+      layoutSource.indexOf("<SiteHeader />")
+    );
+  });
+});

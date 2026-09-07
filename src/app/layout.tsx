@@ -6,6 +6,10 @@ import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/components/SiteHeader";
 import { TRACKER_ID } from "@/lib/tracker-id";
 import { GOOGLE_ADS_INIT_SCRIPT, GOOGLE_ADS_SCRIPT_SRC } from "@/lib/google-ads";
+import {
+  GOOGLE_TAG_MANAGER_IFRAME_SRC,
+  GOOGLE_TAG_MANAGER_INIT_SCRIPT,
+} from "@/lib/google-tag-manager";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -33,12 +37,23 @@ export default function RootLayout({
       className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{ __html: GOOGLE_TAG_MANAGER_INIT_SCRIPT }}
+        ></script>
         <script async src={GOOGLE_ADS_SCRIPT_SRC}></script>
         <script
           dangerouslySetInnerHTML={{ __html: GOOGLE_ADS_INIT_SCRIPT }}
         ></script>
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground tabular-nums">
+        <noscript>
+          <iframe
+            src={GOOGLE_TAG_MANAGER_IFRAME_SRC}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          ></iframe>
+        </noscript>
         <SiteHeader />
         <main className="flex-1">{children}</main>
         <Toaster richColors position="top-center" />
